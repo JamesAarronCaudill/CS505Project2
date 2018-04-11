@@ -27,7 +27,7 @@ def GraphBuilderFunction():
             j = j + 1
         i = i + 2
         print DirectedEmailGraph.edges()
-        nx.draw(DirectedEmailGraph)
+        nx.draw(DirectedEmailGraph,with_labels=True)
         plt.show()
     return
 

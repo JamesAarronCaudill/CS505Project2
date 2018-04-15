@@ -1,7 +1,14 @@
 #This Project will be written in python
 
+#Authors: James Aarron Caudill & Kristina Gessel
+#University of Kentucky CS505G Project 2
+#If this is used please give credit where credit is due, also please use within the terms of NetworkX, urllib and matplotlib
+
 #NetworkX is going to be the API for our Graphs
+#We will be using networkX's implementation of Cliques, as their source provided
+#is identical to how it would need to be implemented.
 #We will be using Directed Graphs
+
 import networkx as nx
 import urllib as url
 import matplotlib.pyplot as plt
@@ -53,9 +60,14 @@ def GraphBuilderFunction():
     return
 
 
+#Here we will be using NetworkX's implementation of cliques to find the cliques
+#The source they provided on their website was very similar to other information and
+#psuedo code that we located for cliques. For simplification we decided to use their implementation
+#as it is ambiguious to reinvent the wheel.
 def FindCliquesAndButterflies():
 
     #This will compute a list of cliques.
+    #We are using NetworkX's Implementation of Cliques
     #Reciprocal = true make sure that only nodes that have both edges will be included for searching for cliques
     listOfCliques = list(nx.find_cliques(DirectedEmailGraph.to_undirected(reciprocal=True)))
 
@@ -68,7 +80,7 @@ def FindCliquesAndButterflies():
     listOfMaximumCliques = []
 
     #This will compute listOfMaximumCliques
-    for i in range(len(listOfCliques) - 1):
+    for i in range(len(listOfCliques)):
         if len(listOfCliques[i]) == maxCliqueSize:
             listOfMaximumCliques.append(listOfCliques[i])
 
@@ -76,8 +88,8 @@ def FindCliquesAndButterflies():
     setOfNodes = set()
 
     #This will compute the setOfNodes
-    for i in range(len(listOfMaximumCliques) - 1):
-        for j in range(maxCliqueSize - 1):
+    for i in range(len(listOfMaximumCliques)):
+        for j in range(maxCliqueSize):
             setOfNodes.add(listOfMaximumCliques[i][j])
 
     #This will hold a temporary list of butterflies. The reason behind this, is we have not verrified that these are only connected by one node and one node only.
@@ -98,41 +110,64 @@ def FindCliquesAndButterflies():
     RealListOfButterflies = []
 
     #This Computes RealListOfButterflies
-    for i in range(len(tempListOfButterflies) - 1):
-
-        #We will create a temp list of the intersection of one of the possibilties for butterflies
-        tempSet = set.intersection(*map(set,tempListOfButterflies[i]))
+    for i in range(len(tempListOfButterflies)):
 
         #This will tell us if the list if larger than size 1, in the case that it is larger than size 1
         #Then we know that there are either 2 cliques with 2 nodes in common
         #or more than 2 cliques one or more with the possibility of more than one node in common.
         if len(tempListOfButterflies[i]) > 2:
-
-            #If the cliques only have one node in common
-            if len(tempSet) == 1:
-
-                #If the list of cliques for butterflies has more than 2 cliques, this will calculate the butterflies
-                for j in range(len(tempListOfButterflies[1]) - 2):
-                    RealListOfButterflies.append(tempListOfButterflies[i][j][j+1])
-
-            #If the cliques have more than one node in common
-            if len(tempSet) >= 2:
-
-                for j in range(len(tempListOfButterflies[i]) - 2):
-                    for k in range(len(tempListOfButterflies[i] - 2)):
-                        if k > j:
-                            tempSetOne = set.intersection(*map(set,tempListOfButterflies[i][j][k + 1]))
-                            if tempSetOne == 1:
-                                RealListOfButterflies.append(tempListOfButterflies[i][j][k+1])
+            for j in range(len(tempListOfButterflies[i])):
+                for k in range(len(tempListOfButterflies[i])):
+                    if k > j:
+                        tempSet = set.intersection(*map(set,(tempListOfButterflies[i][j],tempListOfButterflies[i][k])))
+                        if len(tempSet) == 1:
+                            RealListOfButterflies.append((tempListOfButterflies[i][j], tempListOfButterflies[i][k]))
 
         #If there are only two cliques and only one node in common then we will add them to the list of butterflies
         if(len(tempListOfButterflies[i]) == 2):
+            tempSet = set.intersection(*map(set,tempListOfButterflies[i]))
             if len(tempSet) == 1:
                 RealListOfButterflies.append(tempListOfButterflies[i])
 
-    print RealListOfButterflies
+
+
+    #Here we will start listing cliques of largest size.
+    print "##########################################################"
+    print "The largest size clique in the graph was: ", maxCliqueSize
+    print "##########################################################"
+    print "List of Butterflies: \n"
+
+    for i in range(len(RealListOfButterflies)):
+        print RealListOfButterflies[i]
     return
 
-#Calls the GraphBuilderFunction
+#This function will find all of the people that have emailed woods.
+#These are the people that could of secretly let him know that they have documents
+#It could be as simple as "Hey meet me tomorrow"
+#However we know that in order to signal woods that the person had to emailed him.
+#This will compile a list of everyone that has emailed woods.
+def FindWoodsSource ():
+
+    #Setting up a list to hold all of the users that have emailed WOODS
+    listOfSuspects = []
+
+    #This will iterate over the graph and see if an edge exsits between
+    #A different user and WOODS, this checks only to see people that have emailed him
+    for i in DirectedEmailGraph:
+        if DirectedEmailGraph.has_edge(i, 'WOODS'):
+            listOfSuspects.append(i)
+
+    #Function providing data that was calculated to help find suspects
+    print "\n##########################################################"
+    print "The list of suspects that could have provided user woods"
+    print "with trade secrets of HN."
+    print "##########################################################"
+
+    for i in range(len(listOfSuspects)):
+        print listOfSuspects[i]
+    return
+
+#These are calling all of our functions in order of how they need to be called.
 GraphBuilderFunction()
 FindCliquesAndButterflies()
+FindWoodsSource()

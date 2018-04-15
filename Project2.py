@@ -53,10 +53,86 @@ def GraphBuilderFunction():
     return
 
 
-def FindCliques():
-    print find_cliques(DirectedEmailGraph.to_undirected(reciprocal=False))
+def FindCliquesAndButterflies():
+
+    #This will compute a list of cliques.
+    #Reciprocal = true make sure that only nodes that have both edges will be included for searching for cliques
+    listOfCliques = list(nx.find_cliques(DirectedEmailGraph.to_undirected(reciprocal=True)))
+
+    #This will find the maximum clique size.
+    #Reciprocal = true make sure that only nodes that have both edges will be included for searching for cliques
+    #Cliques = listOfCliques provides the list of cliques already computed
+    maxCliqueSize = nx.graph_clique_number(DirectedEmailGraph.to_undirected(reciprocal=True), cliques=listOfCliques)
+
+    #This list will hold the all of the cliques with the max size that matches maxCliqueSize
+    listOfMaximumCliques = []
+
+    #This will compute listOfMaximumCliques
+    for i in range(len(listOfCliques) - 1):
+        if len(listOfCliques[i]) == maxCliqueSize:
+            listOfMaximumCliques.append(listOfCliques[i])
+
+    #This will contain the nodes from the listOfMaximumCliques, a set is chosen because of no duplicate elements
+    setOfNodes = set()
+
+    #This will compute the setOfNodes
+    for i in range(len(listOfMaximumCliques) - 1):
+        for j in range(maxCliqueSize - 1):
+            setOfNodes.add(listOfMaximumCliques[i][j])
+
+    #This will hold a temporary list of butterflies. The reason behind this, is we have not verrified that these are only connected by one node and one node only.
+    tempListOfButterflies = []
+    maxSizeOfTempListOfButterflies = 0
+
+    #Computes tempListOfButterflies
+    for i in setOfNodes:
+        tempList = nx.cliques_containing_node(DirectedEmailGraph.to_undirected(reciprocal=True), nodes=i, cliques=listOfMaximumCliques)
+        if(len(tempList) >= 2):
+            tempListOfButterflies.append(tempList)
+
+            #This is going to be used to calculate butterflies
+            if maxSizeOfTempListOfButterflies < len(tempList):
+                maxSizeOfTempListOfButterflies = len(tempList)
+
+    #This will hold a list of list of lists that contain {{{LeftWing}{RightWing}},{{LeftWing}{RightWing}}} and so on
+    RealListOfButterflies = []
+
+    #This Computes RealListOfButterflies
+    for i in range(len(tempListOfButterflies) - 1):
+
+        #We will create a temp list of the intersection of one of the possibilties for butterflies
+        tempSet = set.intersection(*map(set,tempListOfButterflies[i]))
+
+        #This will tell us if the list if larger than size 1, in the case that it is larger than size 1
+        #Then we know that there are either 2 cliques with 2 nodes in common
+        #or more than 2 cliques one or more with the possibility of more than one node in common.
+        if len(tempListOfButterflies[i]) > 2:
+
+            #If the cliques only have one node in common
+            if len(tempSet) == 1:
+
+                #If the list of cliques for butterflies has more than 2 cliques, this will calculate the butterflies
+                for j in range(len(tempListOfButterflies[1]) - 2):
+                    RealListOfButterflies.append(tempListOfButterflies[i][j][j+1])
+
+            #If the cliques have more than one node in common
+            if len(tempSet) >= 2:
+
+                for j in range(len(tempListOfButterflies[i]) - 2):
+                    for k in range(len(tempListOfButterflies[i] - 2)):
+                        if k > j:
+                            tempSetOne = set.intersection(*map(set,tempListOfButterflies[i][j][k + 1]))
+                            if tempSetOne == 1:
+                                RealListOfButterflies.append(tempListOfButterflies[i][j][k+1])
+
+        #If there are only two cliques and only one node in common then we will add them to the list of butterflies
+        if(len(tempListOfButterflies[i]) == 2):
+            if len(tempSet) == 1:
+                RealListOfButterflies.append(tempListOfButterflies[i])
+
+    print RealListOfButterflies
     return
 
 #Calls the GraphBuilderFunction
 GraphBuilderFunction()
-FindCliques()
+FindCliquesAndButterflies()

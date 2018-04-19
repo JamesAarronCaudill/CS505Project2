@@ -149,13 +149,20 @@ def FindCliquesAndButterflies():
 def FindWoodsSource ():
 
     #Setting up a list to hold all of the users that have emailed WOODS
-    listOfSuspects = []
+    listOfPeopleWhoEmailedWoods = []
+    listOfPeopleWhoWoodsEmailed = []
 
     #This will iterate over the graph and see if an edge exsits between
-    #A different user and WOODS, this checks only to see people that have emailed him
+    #A different user and WOODS, and WOODS and a different User. This is because it is believed that trades took place via email.
     for i in DirectedEmailGraph:
         if DirectedEmailGraph.has_edge(i, 'WOODS'):
-            listOfSuspects.append(i)
+            listOfPeopleWhoEmailedWoods.append(i)
+    for i in DirectedEmailGraph:
+        if DirectedEmailGraph.has_edge('WOODS', i):
+            listOfPeopleWhoWoodsEmailed.append(i)
+
+    #This is creating a list of suspects that is the intersection between the two lists. This allows us to see who emailed woods and who woods emailed back.
+    listOfSuspects = set.intersection(*map(set,(listOfPeopleWhoEmailedWoods,listOfPeopleWhoWoodsEmailed)))
 
     #Function providing data that was calculated to help find suspects
     print "\n##########################################################"
@@ -164,7 +171,7 @@ def FindWoodsSource ():
     print "##########################################################"
 
     for i in range(len(listOfSuspects)):
-        print listOfSuspects[i]
+        print list(listOfSuspects)[i]
     return
 
 #Question: Who is the most influential employee at Barracuda National?

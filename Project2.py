@@ -167,7 +167,31 @@ def FindWoodsSource ():
         print listOfSuspects[i]
     return
 
+#Question: Who is the most influential employee at Barracuda National?
+#This is determined by the number of vertices leading to a node.
+#It is important to know who the most influential person in a network is, and this has many applications within social media
+#We will determine this by using degree centrality
+#Computes both edges coming in (those who send to the person) and edges going out (those they send to others)
+def MostInfluentialPerson():
+    top5List = []
+    topCentrality = 0;
+    mostInfluentialEmp = "";
+
+    print "\n##########################################################"
+    print "The question: Who is the most influential employee at BN?"
+    print "The most influential person at Barracuda National."
+    print "##########################################################"
+
+    tempList = nx.degree_centrality(DirectedEmailGraph)
+
+    for i in DirectedEmailGraph:
+            if (tempList[i] > topCentrality):
+                mostInfluentialEmp = i
+
+    print mostInfluentialEmp
+
 #These are calling all of our functions in order of how they need to be called.
 GraphBuilderFunction()
 FindCliquesAndButterflies()
 FindWoodsSource()
+MostInfluentialPerson()
